@@ -9,8 +9,6 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import {
   serverLogger,
   generateRequestId,
-  sanitizeLogString,
-  sanitizeLogMetadata,
   ErrorCategory,
 } from './logger';
 
@@ -316,7 +314,7 @@ function sanitizeErrorMessage(msg: string): string {
 /**
  * Defensive prompt injection sanitizer to neutralize adversarial overrides in research/external data
  */
-function sanitizePromptInput(input: string): string {
+export function sanitizePromptInput(input: string): string {
   if (!input || typeof input !== 'string') return '';
   return input
     .replace(/(?:ignore|disregard|forget|override)\s+(?:all\s+)?(?:previous|prior|system)\s+(?:instructions|prompts|rules)/gi, '[REDACTED_PROMPT_INJECTION]')
@@ -5520,7 +5518,7 @@ JSON SCHEMA:
         res[g] = {
           group: g,
           amount,
-          percentage: Number(pct.toFixed(1)),
+          percentage: total > 0 ? Number(((amount / total) * 100).toFixed(1)) : Number(pct.toFixed(1)),
           itemCount: items.length,
         };
       });
@@ -6441,14 +6439,14 @@ async function executeSecureWebsiteSeoAudit(
 
   // Safe HTML Extraction using Regex
   const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].trim() : '';
+  const title = titleMatch && titleMatch[1] ? titleMatch[1].trim() : '';
 
   const getMeta = (nameOrProperty: string, isProp = false): string => {
     const attr = isProp ? 'property' : 'name';
     const regex1 = new RegExp(`<meta[^>]*${attr}=["']${nameOrProperty}["'][^>]*content=["']([^"']*)["']`, 'i');
     const regex2 = new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*${attr}=["']${nameOrProperty}["']`, 'i');
     const m = html.match(regex1) || html.match(regex2);
-    return m ? m[1].trim() : '';
+    return m && m[1] ? m[1].trim() : '';
   };
 
   const description = getMeta('description');
@@ -6461,16 +6459,19 @@ async function executeSecureWebsiteSeoAudit(
   const canonicalMatch =
     html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["']/i) ||
     html.match(/<link[^>]*href=["']([^"']*)["'][^>]*rel=["']canonical["']/i);
-  const canonical = canonicalMatch ? canonicalMatch[1].trim() : '';
+  const canonical = canonicalMatch && canonicalMatch[1] ? canonicalMatch[1].trim() : '';
 
   // Extract headings
   const extractHeadings = (tag: string): string[] => {
     const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi');
     const matches: string[] = [];
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = regex.exec(html)) !== null && matches.length < 15) {
-      const clean = match[1].replace(/<[^>]+>/g, '').trim();
-      if (clean) matches.push(clean);
+      const headingContent = match[1];
+      if (headingContent) {
+        const clean = headingContent.replace(/<[^>]+>/g, '').trim();
+        if (clean) matches.push(clean);
+      }
     }
     return matches;
   };
@@ -6485,14 +6486,14 @@ async function executeSecureWebsiteSeoAudit(
   let missingAltCount = 0;
   const sampleImages: Array<{ src: string; alt: string; missingAlt: boolean }> = [];
 
-  let imgMatch;
+  let imgMatch: RegExpExecArray | null;
   while ((imgMatch = imgRegex.exec(html)) !== null) {
     totalImages++;
     const tag = imgMatch[0];
     const srcMatch = tag.match(/src=["']([^"']*)["']/i);
     const altMatch = tag.match(/alt=["']([^"']*)["']/i);
-    const src = srcMatch ? srcMatch[1] : '';
-    const alt = altMatch ? altMatch[1].trim() : '';
+    const src = srcMatch && srcMatch[1] ? srcMatch[1] : '';
+    const alt = altMatch && altMatch[1] ? altMatch[1].trim() : '';
     const hasMissingAlt = !altMatch || alt === '';
     if (hasMissingAlt) missingAltCount++;
 
@@ -6515,9 +6516,11 @@ async function executeSecureWebsiteSeoAudit(
   const sampleInternal: string[] = [];
   const sampleExternal: string[] = [];
 
-  let aMatch;
+  let aMatch: RegExpExecArray | null;
   while ((aMatch = aRegex.exec(html)) !== null) {
-    const href = aMatch[1].trim();
+    const rawHref = aMatch[1];
+    if (!rawHref) continue;
+    const href = rawHref.trim();
     if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
       continue;
     }
@@ -6538,15 +6541,17 @@ async function executeSecureWebsiteSeoAudit(
   // Extract structured data
   const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   const schemaTypes: string[] = [];
-  let schemaMatch;
+  let schemaMatch: RegExpExecArray | null;
   while ((schemaMatch = jsonLdRegex.exec(html)) !== null) {
+    const rawJson = schemaMatch[1];
+    if (!rawJson) continue;
     try {
-      const parsed = JSON.parse(schemaMatch[1]);
+      const parsed = JSON.parse(rawJson);
       if (parsed['@type']) {
         schemaTypes.push(String(parsed['@type']));
       } else if (Array.isArray(parsed['@graph'])) {
         parsed['@graph'].forEach((item: any) => {
-          if (item['@type']) schemaTypes.push(String(item['@type']));
+          if (item && item['@type']) schemaTypes.push(String(item['@type']));
         });
       }
     } catch {
