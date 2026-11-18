@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="sparklineGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0C65F4" />
+      <stop offset="50%" stop-color="#593090" />
+      <stop offset="100%" stop-color="#C52B85" />
+    </linearGradient>
+    <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0C65F4" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0C65F4" stop-opacity="0.0" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background Badge -->
+  <rect width="100" height="100" rx="22" fill="#071329" />
+  <rect x="1" y="1" width="98" height="98" rx="21" stroke="#152238" stroke-width="2" />
+  
+  <!-- Subtle Grid Lines -->
+  <line x1="20" y1="40" x2="80" y2="40" stroke="#152238" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="20" y1="60" x2="80" y2="60" stroke="#152238" stroke-width="1" stroke-dasharray="2 2" />
+  
+  <!-- Area fill under sparkline -->
+  <path d="M 20 68 L 36 52 L 48 60 L 64 34 L 80 22 L 80 75 L 20 75 Z" fill="url(#areaGrad)" />
+  
+  <!-- Dynamic Sparkline Curve -->
+  <path d="M 20 68 L 36 52 L 48 60 L 64 34 L 80 22" 
+        stroke="url(#sparklineGrad)" 
+        stroke-width="5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+        
+  <!-- Analytics Node Points -->
+  <circle cx="20" cy="68" r="3.5" fill="#2292D9" />
+  <circle cx="36" cy="52" r="3.5" fill="#0C65F4" />
+  <circle cx="48" cy="60" r="3.5" fill="#593090" />
+  <circle cx="64" cy="34" r="3.5" fill="#C52B85" />
+  
+  <!-- Peak Growth Point with Ping Accent -->
+  <circle cx="80" cy="22" r="6" fill="#E37C33" opacity="0.3" />
+  <circle cx="80" cy="22" r="4.5" fill="#E37C33" stroke="#FFFFFF" stroke-width="1.5" />
+</svg>
+

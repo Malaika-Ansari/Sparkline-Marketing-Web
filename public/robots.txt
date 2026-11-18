@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /tools
+Allow: /marketing-academy
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms
+
+# Disallow authenticated dashboard pages, projects, and private reports from indexing
+Disallow: /dashboard/
+Disallow: /dashboard/*
+
+# Disallow private authentication and account recovery pages
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+
+# Disallow internal design system and test showcases
+Disallow: /design-system
+
+# Disallow backend API and server proxy endpoints
+Disallow: /api/
+Disallow: /api/*
+
+# Sitemap location
+Sitemap: https://sparklinemarketing.com/sitemap.xml
+

@@ -1,0 +1,45 @@
+{
+  "name": "sparkline-marketing",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "test": "node src/test/run-security-suite.mjs && node src/test/run-analytics-suite.mjs && node src/test/run-calculations-suite.mjs && node src/test/run-seo-suite.mjs && node src/test/run-e2e-regression-suite.mjs && node src/test/run-production-gate-suite.mjs && node src/test/run-ai-backend-suite.mjs && node src/test/run-supabase-security-suite.mjs && node src/test/run-security-hardening-suite.mjs && node src/test/run-reliability-suite.mjs && node src/test/run-phase-b-suite.mjs",
+    "test:phase-b": "node src/test/run-phase-b-suite.mjs",
+    "test:security": "node src/test/run-security-suite.mjs",
+    "test:hardening": "node src/test/run-security-hardening-suite.mjs",
+    "test:reliability": "node src/test/run-reliability-suite.mjs",
+    "test:supabase": "node src/test/run-supabase-security-suite.mjs",
+    "test:ai": "node src/test/run-ai-backend-suite.mjs",
+    "test:analytics": "node src/test/run-analytics-suite.mjs",
+    "test:calculations": "node src/test/run-calculations-suite.mjs",
+    "test:seo": "node src/test/run-seo-suite.mjs",
+    "test:e2e": "node src/test/run-e2e-regression-suite.mjs",
+    "test:gate": "node src/test/run-production-gate-suite.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.441.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^2.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.45",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.2"
+  }
+}
+
