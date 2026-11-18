@@ -2358,9 +2358,15 @@ export async function handleUserAccount(req: IncomingMessage, res: ServerRespons
  * Handles all /api/* routes for standalone servers, Vercel serverless functions, and Vite dev middleware.
  */
 export async function handleApiRequest(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-  const url = req.url?.split('?')[0];
-  if (!url || !url.startsWith('/api/')) {
-    return false;
+  // Normalize incoming URL
+  let rawUrl = req.url?.split('?')[0] || '';
+
+  // If invoked via Vercel catch-all [...path].ts, inspect query path if URL is empty or root
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const queryPath = (req as any).query?.path;
+  if ((rawUrl === '' || rawUrl === '/' || rawUrl === '/api' || rawUrl === '/api/') && queryPath) {
+    const sub = Array.isArray(queryPath) ? queryPath.join('/') : String(queryPath);
+    rawUrl = `/api/${sub.replace(/^\/+/, '')}`;
   }
 
   // Preflight CORS support for decoupled frontends
@@ -2375,6 +2381,18 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     });
     res.end();
     return true;
+  }
+
+  // Handle root /api and /api/
+  if (rawUrl === '/api' || rawUrl === '/api/' || rawUrl === '') {
+    await handleHealth(req, res);
+    return true;
+  }
+
+  // Ensure path starts with /api/
+  let url = rawUrl;
+  if (!url.startsWith('/api/')) {
+    url = `/api/${url.replace(/^\/+/, '')}`;
   }
 
   try {

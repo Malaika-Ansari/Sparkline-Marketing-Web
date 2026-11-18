@@ -102,40 +102,62 @@ function createMockRequest(method, url, body = null, headers = {}) {
 }
 
 // ==============================================================================
-// TEST 1: Serverless Function Inventory & Export Verification
+// TEST 1: Serverless Function Inventory & Vercel Hobby Plan (<= 12 Functions) Verification
 // ==============================================================================
-runTest('All 20 Serverless API Function files exist in api/', () => {
+runTest('Serverless API consolidated into centralized router <= 12 functions for Vercel Hobby', () => {
   const apiDir = path.join(rootDir, 'api');
   assert.ok(fs.existsSync(apiDir), 'api directory must exist at project root');
 
-  const requiredFiles = [
-    'health.ts',
-    'ai-status.ts',
-    'generate-strategy.ts',
-    'generate-audience.ts',
-    'generate-market-research.ts',
-    'research-assistant.ts',
-    'generate-competitor-analysis.ts',
-    'competitor-assistant.ts',
-    'discover-competitors.ts',
-    'generate-unified-strategy.ts',
-    'generate-budget-plan.ts',
-    'exchange-rates.ts',
-    'generate-forecast-explanation.ts',
-    'generate-campaign-plan.ts',
-    'generate-social-post.ts',
-    'generate-content-ideas.ts',
-    'assist-content-copy.ts',
-    'audit-website-seo.ts',
-    'generate-seo-content.ts',
-    '[...path].ts',
+  // Verify centralized catch-all router and root entrypoint exist
+  const routerPath = path.join(apiDir, '[...path].ts');
+  const indexPath = path.join(apiDir, 'index.ts');
+  assert.ok(fs.existsSync(routerPath), 'api/[...path].ts must exist');
+  assert.ok(fs.existsSync(indexPath), 'api/index.ts must exist');
+
+  const routerContent = fs.readFileSync(routerPath, 'utf8');
+  assert.ok(routerContent.includes('export default async function handler'), 'api/[...path].ts must export default handler');
+
+  const indexContent = fs.readFileSync(indexPath, 'utf8');
+  assert.ok(indexContent.includes('export default async function handler'), 'api/index.ts must export default handler');
+
+  // Verify function count is strictly <= 12 for Vercel Hobby Plan
+  const apiFiles = fs.readdirSync(apiDir).filter(f => f.endsWith('.ts') || f.endsWith('.js'));
+  assert.ok(
+    apiFiles.length <= 12,
+    `Vercel Hobby plan allows maximum 12 Serverless Functions, found ${apiFiles.length}`
+  );
+  assert.strictEqual(apiFiles.length, 2, 'Centralized router architecture must deploy exactly 2 functions');
+
+  // Verify that all 20 API endpoints are registered in the centralized dispatcher
+  const serverCode = fs.readFileSync(path.join(rootDir, 'src/server/ai-proxy-middleware.ts'), 'utf8');
+  const allEndpoints = [
+    '/api/health',
+    '/api/ai-status',
+    '/api/generate-strategy',
+    '/api/generate-audience',
+    '/api/generate-market-research',
+    '/api/research-assistant',
+    '/api/generate-competitor-analysis',
+    '/api/competitor-assistant',
+    '/api/discover-competitors',
+    '/api/generate-unified-strategy',
+    '/api/generate-budget-plan',
+    '/api/exchange-rates',
+    '/api/generate-forecast-explanation',
+    '/api/generate-campaign-plan',
+    '/api/generate-social-post',
+    '/api/generate-content-ideas',
+    '/api/assist-content-copy',
+    '/api/audit-website-seo',
+    '/api/generate-seo-content',
+    '/api/user-account',
   ];
 
-  for (const file of requiredFiles) {
-    const filePath = path.join(apiDir, file);
-    assert.ok(fs.existsSync(filePath), `Serverless function api/${file} must exist`);
-    const content = fs.readFileSync(filePath, 'utf8');
-    assert.ok(content.includes('export default async function handler'), `api/${file} must export a default handler`);
+  for (const endpoint of allEndpoints) {
+    assert.ok(
+      serverCode.includes(`url === '${endpoint}'`),
+      `Centralized API dispatcher must route endpoint ${endpoint}`
+    );
   }
 });
 
